@@ -1,0 +1,43 @@
+name: Deploy Resume to GitHub Pages
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 16  # Node 16 原生兼容旧哈希算法，无需额外参数
+          cache: 'npm'
+
+      # 忽略 peer 依赖冲突，强制安装
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      # 关键：移除 --openssl-legacy-provider 参数，直接执行 build
+      - name: Build project
+        run: npm run build
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './dist'  # 确认是你的项目输出目录
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
