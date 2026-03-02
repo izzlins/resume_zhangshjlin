@@ -20,16 +20,20 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 16  # Node 16 原生兼容旧哈希算法，无需额外参数
+          node-version: 16
           cache: 'npm'
 
       # 忽略 peer 依赖冲突，强制安装
       - name: Install dependencies
         run: npm install --legacy-peer-deps
 
-      # 关键：移除 --openssl-legacy-provider 参数，直接执行 build
-      - name: Build project
-        run: npm run build
+      # 关键修改：不使用项目的 build 脚本，直接执行 webpack 构建（绕开 webpack-dist.config.js）
+      - name: Build project (绕过废弃插件配置)
+        run: |
+          # 安装缺失的压缩插件（适配 webpack 4）
+          npm install terser-webpack-plugin@4.2.3 --save-dev
+          # 直接用 webpack 构建，指定通用配置+生产模式，无需 webpack-dist.config.js
+          NODE_ENV=production webpack --mode production --config webpack.config.js
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
