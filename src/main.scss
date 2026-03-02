@@ -456,3 +456,9 @@ a {
     height: 100%;
   }
 }
+
+.info ul,
+.contact ul {
+  list-style: none;
+  padding-left: 0;
+}
